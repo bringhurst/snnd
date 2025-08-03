@@ -1,6 +1,8 @@
 ## Spiking Neural Network Protocol (SNNP) - Version 1
 
-This document defines the wire protocol for SNNP. It assumes peer discovery is handled by an external DHT.
+This document defines the SNNP wire protocol for distributed [SNNs](https://en.wikipedia.org/wiki/Spiking_neural_network).
+
+It assumes peer discovery is handled by an external [DHT](https://en.wikipedia.org/wiki/Distributed_hash_table).
 
 ## 1. Overview
 
