@@ -37,14 +37,12 @@ pub const Dht = struct {
 
     /// Set up your node.
     /// Call once. Check for errors.
-    pub fn init(cfg: Config) !Dht {
-        var table = try Table.init(cfg);
-        var node = try Node.init(cfg, table);
-        return Dht{
-            .config = cfg,
-            .table = table,
-            .node = node,
-        };
+    pub fn init(cfg: Config) !*Dht {
+        var dht_ptr = try cfg.allocator.create(Dht);
+        dht_ptr.config = cfg;
+        dht_ptr.table = try Table.init(cfg);
+        dht_ptr.node = try Node.init(cfg, dht_ptr.table);
+        return dht_ptr;
     }
 
     /// Clean up everything you got from init.
@@ -52,6 +50,7 @@ pub const Dht = struct {
     pub fn deinit(self: *Dht) void {
         self.node.deinit();
         self.table.deinit();
+        self.config.allocator.destroy(self);
     }
 
     /// Save a value in the DHT.
@@ -73,7 +72,7 @@ pub const Dht = struct {
     }
 
     /// List some peers you know.
-    /// Pass a buffer, it gets filled with up with peers. Returns count.
+    /// Pass a buffer, it gets filled up with peers. Returns count.
     pub fn peers(self: *Dht, out: []Peer) !usize {
         return self.table.peers(out);
     }
