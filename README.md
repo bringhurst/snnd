@@ -13,6 +13,8 @@ snnc/  # Client
 
 ## Getting started
 
+First, [setup a Zig toolchain](https://ziglang.org), then:
+
 ```
 zig build
 zig build test
