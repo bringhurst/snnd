@@ -4,6 +4,7 @@
 
 A reference [SNNP](SNNP.md) node.
 
+### Layout
 ```
 dht/   # Distributed hash table
 nn/    # Neuron models
@@ -13,6 +14,9 @@ snnd/  # Server
 snnc/  # Client
 ```
 
+### Flow
+
+DHT finds peers, IDs passed through the map hash, spikes travel in bursts.
 ```
  +----------------+    +--------------+    +----------------+
  |                +----+ Kademlia DHT +----+                |
@@ -23,7 +27,7 @@ snnc/  # Client
  +----------------+     +------------+     +----------------+
 ```
 
-## Getting started
+### Building
 
 First, [setup a Zig toolchain](https://ziglang.org), then:
 
