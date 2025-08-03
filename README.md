@@ -1,6 +1,6 @@
 # snnd: Spiking Neural Network Daemon
 
-A reference SNNP node.
+A reference [SNNP](SNNP.md) node.
 
 ```
 dht/   # Distributed hash table
