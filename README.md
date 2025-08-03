@@ -7,7 +7,7 @@ dht/   # Distributed hash table
 nn/    # Neuron models
 proto/ # Protocol messages
 util/  # Utilities
-snnd/  # Daemon
+snnd/  # Server
 snnc/  # Client
 ```
 
