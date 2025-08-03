@@ -17,7 +17,7 @@ Each message begins with the following header:
 
 | Offset | Size | Field        | Description                               |
 |--------|------|--------------|-------------------------------------------|
-| 0      | 4    | Magic        | `0x534E4E50` ("SNNP" in ASCII)           |
+| 0      | 4    | Magic        | `0x534E4E50` ("SNNP" in ASCII)            |
 | 4      | 1    | Version      | Protocol version (uint8), `0x01`          |
 | 5      | 1    | Msg Type     | See section 3                             |
 | 6      | 2    | Reserved     | Reserved for future use, MUST be zero     |
