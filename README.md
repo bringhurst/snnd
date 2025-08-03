@@ -1,8 +1,8 @@
 # Spiking Neural Network Daemon
 
-> Our interests and our activities interpenetrate more and more. We are all consciously or unconsciously adapting ourselves to a single common world. - H.G. Wells
-
 A reference [SNNP](SNNP.md) node.
+
+> Our interests and our activities interpenetrate more and more. We are all consciously or unconsciously adapting ourselves to a single common world. - H.G. Wells
 
 ### Layout
 ```
