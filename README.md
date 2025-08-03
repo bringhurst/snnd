@@ -1,4 +1,4 @@
-# snnd: Spiking Neural Network Daemon
+# Spiking Neural Network Daemon
 
 A reference [SNNP](SNNP.md) node.
 
