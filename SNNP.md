@@ -7,7 +7,7 @@ This document defines the wire protocol for SNNP. It assumes peer discovery is h
 - All messages are transmitted over UDP.
 - Each UDP datagram contains exactly one SNNP message.
 - All multi-byte fields use network byte order (big-endian).
-- UUIDs conform to RFC 4122 (16 bytes).
+- UUIDs conform to [RFC 4122](https://www.rfc-editor.org/rfc/rfc4122) (16 bytes).
 
 ## 2. Message Types
 
@@ -46,7 +46,7 @@ Transmits a spike event from a source neuron to a destination neuron.
 
 ## 4. Field Encoding
 
-- **UUIDs:** 16 bytes, RFC4122, big-endian
+- **UUIDs:** 16 bytes, [RFC 4122](https://www.rfc-editor.org/rfc/rfc4122), big-endian
 - **Neuron IDs:** uint16 (2 bytes), unique within group
 - **Timestamps:** uint64 (8 bytes), milliseconds since Unix epoch (UTC)
 
