@@ -2,12 +2,16 @@
 
 A reference SNNP node.
 
-```
-.
-├── dht/      # Distributed hash table
-├── nn/       # Neuron models
-├── proto/    # Protocol messages
-├── util/     # Utilities
-├── snnd/     # Daemon
-├── snnc/     # Client
+* dht/   # Distributed hash table
+* nn/    # Neuron models
+* proto/ # Protocol messages
+* util/  # Utilities
+* snnd/  # Daemon
+* snnc/  # Client
+
+## Getting started
+
+```sh
+zig build
+zig build test
 ```
