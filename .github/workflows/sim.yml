@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Test
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: mlugg/setup-zig@v2
       - run: zig build test
 
@@ -27,7 +27,7 @@ jobs:
         run: [1, 2, 3]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: mlugg/setup-zig@v2
 
       - name: generate dht parameters
@@ -59,7 +59,7 @@ jobs:
         run: [1, 2, 3]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: mlugg/setup-zig@v2
 
       - name: generate network parameters
@@ -86,10 +86,125 @@ jobs:
             --duration ${{ steps.params.outputs.duration }} \
             --seed ${{ steps.params.outputs.seed }}
 
+  benchmark-dht:
+    needs: test
+    runs-on: ubuntu-latest
+    name: DHT Benchmark
+    if: github.ref == 'refs/heads/master' || github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+      
+      - name: Run DHT Benchmark
+        run: |
+          # Fixed parameters for consistent benchmarking
+          echo "Running DHT benchmark with fixed parameters..."
+          timeout 300 zig build sim-dht -- --duration 240 --peers 100 --rate 250 --seed 42 --benchmark > dht-benchmark.json || echo "[]" > dht-benchmark.json
+          
+          # Ensure we have valid JSON output
+          if [ ! -s dht-benchmark.json ] || ! jq empty dht-benchmark.json 2>/dev/null; then
+            echo '[{"name": "dht-simulation", "unit": "ms", "value": 999999}]' > dht-benchmark.json
+          fi
+          
+          cat dht-benchmark.json
+
+      - name: Store DHT Benchmark Result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: dht-benchmark.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          comment-on-alert: true
+          alert-threshold: '150%'
+          fail-on-alert: false
+          benchmark-data-dir-path: 'benchmarks/dht'
+
+  benchmark-network:
+    needs: test
+    runs-on: ubuntu-latest
+    name: Neural Network Benchmark
+    if: github.ref == 'refs/heads/master' || github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+      
+      - name: Run Network Benchmark
+        run: |
+          # Fixed parameters for consistent benchmarking
+          echo "Running neural network benchmark with fixed parameters..."
+          timeout 300 zig build sim-network -- --neurons 1000 --connections 0.15 --current 1.8 --duration 3000 --seed 42 --benchmark > network-benchmark.json || echo "[]" > network-benchmark.json
+          
+          # Ensure we have valid JSON output
+          if [ ! -s network-benchmark.json ] || ! jq empty network-benchmark.json 2>/dev/null; then
+            echo '[{"name": "network-simulation", "unit": "ms", "value": 999999}]' > network-benchmark.json
+          fi
+          
+          cat network-benchmark.json
+
+      - name: Store Network Benchmark Result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: network-benchmark.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          comment-on-alert: true
+          alert-threshold: '150%'
+          fail-on-alert: false
+          benchmark-data-dir-path: 'benchmarks/network'
+
+  perf-matrix:
+    needs: test
+    runs-on: ubuntu-latest
+    name: Performance Matrix
+    if: github.ref == 'refs/heads/master' || github.event_name == 'schedule'
+    strategy:
+      matrix:
+        config:
+          - { name: "small", neurons: 500, duration: 1000 }
+          - { name: "medium", neurons: 2000, duration: 2000 }
+          - { name: "large", neurons: 5000, duration: 3000 }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v2
+      
+      - name: Run Performance Test - ${{ matrix.config.name }}
+        run: |
+          echo "Running ${{ matrix.config.name }} performance test..."
+          timeout 600 zig build sim-network -- \
+            --neurons ${{ matrix.config.neurons }} \
+            --connections 0.12 \
+            --current 1.8 \
+            --duration ${{ matrix.config.duration }} \
+            --seed 42 \
+            --benchmark > perf-${{ matrix.config.name }}.json || echo "[]" > perf-${{ matrix.config.name }}.json
+          
+          # Add config name to benchmark data
+          if [ -s perf-${{ matrix.config.name }}.json ] && jq empty perf-${{ matrix.config.name }}.json 2>/dev/null; then
+            jq --arg name "${{ matrix.config.name }}" 'map(.name = .name + "-" + $name)' perf-${{ matrix.config.name }}.json > perf-${{ matrix.config.name }}-final.json
+          else
+            echo '[{"name": "network-simulation-${{ matrix.config.name }}", "unit": "ms", "value": 999999}]' > perf-${{ matrix.config.name }}-final.json
+          fi
+          
+          cat perf-${{ matrix.config.name }}-final.json
+
+      - name: Store Performance Matrix Result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'customSmallerIsBetter'
+          output-file-path: perf-${{ matrix.config.name }}-final.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          comment-on-alert: true
+          alert-threshold: '200%'
+          fail-on-alert: false
+          benchmark-data-dir-path: 'benchmarks/matrix'
+
   summary:
     runs-on: ubuntu-latest
     name: Summary
-    needs: [test, dht-sim, network-sim]
+    needs: [test, dht-sim, network-sim, benchmark-dht, benchmark-network, perf-matrix]
     if: always()
     steps:
       - name: report results
@@ -98,8 +213,11 @@ jobs:
           echo "test: ${{ needs.test.result }}"
           echo "dht-sim: ${{ needs.dht-sim.result }}"
           echo "network-sim: ${{ needs.network-sim.result }}"
-
-          # check overall success
+          echo "benchmark-dht: ${{ needs.benchmark-dht.result }}"
+          echo "benchmark-network: ${{ needs.benchmark-network.result }}"
+          echo "perf-matrix: ${{ needs.perf-matrix.result }}"
+          
+          # check core functionality success (benchmarks are optional)
           if [ "${{ needs.test.result }}" = "success" ] && \
              [ "${{ needs.dht-sim.result }}" = "success" ] && \
              [ "${{ needs.network-sim.result }}" = "success" ]; then

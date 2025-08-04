@@ -22,6 +22,7 @@ const Modules = struct {
     // nn
     lif: *std.Build.Module,
     neuron: *std.Build.Module,
+    network: *std.Build.Module,
 };
 
 const Executables = struct {
@@ -30,8 +31,24 @@ const Executables = struct {
 };
 
 fn createModules(b: *std.Build) Modules {
+    const lif = b.addModule("lif", .{
+        .root_source_file = b.path("nn/lif/lif.zig"),
+    });
+
+    const neuron = b.addModule("neuron", .{
+        .root_source_file = b.path("nn/neuron.zig"),
+    });
+
+    neuron.addImport("lif", lif);
+
+    const network = b.addModule("network", .{
+        .root_source_file = b.path("nn/network.zig"),
+    });
+
+    network.addImport("lif", lif);
+    network.addImport("neuron", neuron);
+
     return Modules{
-        // dht modules
         .dht = b.addModule("dht", .{
             .root_source_file = b.path("dht/dht.zig"),
         }),
@@ -45,16 +62,12 @@ fn createModules(b: *std.Build) Modules {
             .root_source_file = b.path("dht/msg.zig"),
         }),
         .sim = b.addModule("sim", .{
-            .root_source_file = b.path("dht/sim.zig"),
+            .root_source_file = b.path("dht/dht_sim.zig"),
         }),
 
-        // neuron modules
-        .lif = b.addModule("lif", .{
-            .root_source_file = b.path("nn/lif/lif.zig"),
-        }),
-        .neuron = b.addModule("neuron", .{
-            .root_source_file = b.path("nn/neuron.zig"),
-        }),
+        .lif = lif,
+        .neuron = neuron,
+        .network = network,
     };
 }
 
@@ -62,7 +75,7 @@ fn createExecutables(b: *std.Build, target: std.Build.ResolvedTarget, optimize: 
     // dht simulator
     const dht_sim_exe = b.addExecutable(.{
         .name = "sim-dht",
-        .root_source_file = b.path("dht/sim.zig"),
+        .root_source_file = b.path("dht/dht_sim.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -76,12 +89,13 @@ fn createExecutables(b: *std.Build, target: std.Build.ResolvedTarget, optimize: 
     // network simulator
     const network_sim_exe = b.addExecutable(.{
         .name = "sim-network",
-        .root_source_file = b.path("nn/network.zig"),
+        .root_source_file = b.path("nn/network_sim.zig"),
         .target = target,
         .optimize = optimize,
     });
     network_sim_exe.root_module.addImport("lif", modules.lif);
     network_sim_exe.root_module.addImport("neuron", modules.neuron);
+    network_sim_exe.root_module.addImport("network", modules.network);
     b.installArtifact(network_sim_exe);
 
     return Executables{
@@ -138,9 +152,19 @@ fn createTestSteps(b: *std.Build, target: std.Build.ResolvedTarget, optimize: st
     });
     neuron_tests.root_module.addImport("lif", modules.lif);
 
+    // network tests
+    const network_tests = b.addTest(.{
+        .root_source_file = b.path("nn/network.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    network_tests.root_module.addImport("lif", modules.lif);
+    network_tests.root_module.addImport("neuron", modules.neuron);
+
     // test step
     const test_step = b.step("test", "Run all tests");
     test_step.dependOn(&dht_tests.step);
     test_step.dependOn(&lif_tests.step);
     test_step.dependOn(&neuron_tests.step);
+    test_step.dependOn(&network_tests.step);
 }
