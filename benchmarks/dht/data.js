@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1754288561245,
+  "lastUpdate": 1754288751266,
   "repoUrl": "https://github.com/bringhurst/snnd",
   "entries": {
     "Benchmark": [
@@ -270,6 +270,75 @@ window.BENCHMARK_DATA = {
           {
             "name": "processing-throughput",
             "value": 247.183393,
+            "unit": "msg/s"
+          },
+          {
+            "name": "message-efficiency",
+            "value": 0.999949,
+            "unit": "ratio"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jon@bringhurst.org",
+            "name": "Jon Bringhurst",
+            "username": "bringhurst"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b76973284728d2cc86dc46dc735706de52c056f5",
+          "message": "Merge pull request #8 from bringhurst/jbringhu/remove_ghp_action\n\nRemove GHP action",
+          "timestamp": "2025-08-03T23:21:12-07:00",
+          "tree_id": "70b4fa2af73941b2ce7747110d61942ab8b0ac05",
+          "url": "https://github.com/bringhurst/snnd/commit/b76973284728d2cc86dc46dc735706de52c056f5"
+        },
+        "date": 1754288750407,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "total-simulation-time",
+            "value": 240116.746494,
+            "unit": "ms"
+          },
+          {
+            "name": "setup-time",
+            "value": 31.84683,
+            "unit": "ms"
+          },
+          {
+            "name": "simulation-time",
+            "value": 240084.896007,
+            "unit": "ms"
+          },
+          {
+            "name": "messages-sent",
+            "value": 59350,
+            "unit": "count"
+          },
+          {
+            "name": "messages-processed",
+            "value": 59347,
+            "unit": "count"
+          },
+          {
+            "name": "peer-connections",
+            "value": 297,
+            "unit": "count"
+          },
+          {
+            "name": "message-throughput",
+            "value": 247.204222,
+            "unit": "msg/s"
+          },
+          {
+            "name": "processing-throughput",
+            "value": 247.191727,
             "unit": "msg/s"
           },
           {
