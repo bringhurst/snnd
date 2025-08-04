@@ -1,0 +1,111 @@
+name: Simulators
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '30 2 * * *'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Build and Test
+    steps:
+      - uses: actions/checkout@v3
+      - uses: mlugg/setup-zig@v2
+      - run: zig build test
+
+  dht-sim:
+    needs: test
+    runs-on: ubuntu-latest
+    name: DHT Simulation
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        run: [1, 2, 3]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - uses: mlugg/setup-zig@v2
+
+      - name: generate dht parameters
+        id: params
+        run: |
+          S=$((GITHUB_RUN_NUMBER + ${{ matrix.run }} + $(date +%s)))
+          P=$((30 + S % 171))    # 30-200 peers
+          R=$((100 + S % 401))   # 100-500 rate
+          echo "dht run ${{ matrix.run }}: seed=$S peers=$P rate=$R duration=240s"
+          echo "seed=$S" >> $GITHUB_OUTPUT
+          echo "peers=$P" >> $GITHUB_OUTPUT
+          echo "rate=$R" >> $GITHUB_OUTPUT
+
+      - name: run dht simulation
+        run: |
+          zig build sim-dht -- --duration 240 --peers ${{ steps.params.outputs.peers }} --rate ${{ steps.params.outputs.rate }} --seed ${{ steps.params.outputs.seed }}
+
+      - name: cleanup
+        if: always()
+        run: rm -f .dht_peers_*
+
+  network-sim:
+    needs: test
+    runs-on: ubuntu-latest
+    name: Neural Network Simulation
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        run: [1, 2, 3]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - uses: mlugg/setup-zig@v2
+
+      - name: generate network parameters
+        id: params
+        run: |
+          S=$((GITHUB_RUN_NUMBER + ${{ matrix.run }} + $(date +%s)))
+          N=$((200 + S % 601))                  # 200-800 neurons (more robust)
+          C=$(echo "scale=2; 0.10 + ($S % 16) * 0.01" | bc -l)  # 0.10-0.25 connectivity
+          I=$(echo "scale=1; 1.6 + ($S % 13) * 0.05" | bc -l)   # 1.6-2.2 nA current (avoid silence)
+          D=$((2000 + S % 3001))                # 2000-5000ms duration
+          echo "network run ${{ matrix.run }}: neurons=$N connections=$C current=${I}nA duration=${D}ms seed=$S"
+          echo "neurons=$N" >> $GITHUB_OUTPUT
+          echo "connections=$C" >> $GITHUB_OUTPUT
+          echo "current=$I" >> $GITHUB_OUTPUT
+          echo "duration=$D" >> $GITHUB_OUTPUT
+          echo "seed=$S" >> $GITHUB_OUTPUT
+
+      - name: run network simulation
+        run: |
+          zig build sim-network -- \
+            --neurons ${{ steps.params.outputs.neurons }} \
+            --connections ${{ steps.params.outputs.connections }} \
+            --current ${{ steps.params.outputs.current }} \
+            --duration ${{ steps.params.outputs.duration }} \
+            --seed ${{ steps.params.outputs.seed }}
+
+  summary:
+    runs-on: ubuntu-latest
+    name: Summary
+    needs: [test, dht-sim, network-sim]
+    if: always()
+    steps:
+      - name: report results
+        run: |
+          echo "=== simulation results ==="
+          echo "test: ${{ needs.test.result }}"
+          echo "dht-sim: ${{ needs.dht-sim.result }}"
+          echo "network-sim: ${{ needs.network-sim.result }}"
+
+          # check overall success
+          if [ "${{ needs.test.result }}" = "success" ] && \
+             [ "${{ needs.dht-sim.result }}" = "success" ] && \
+             [ "${{ needs.network-sim.result }}" = "success" ]; then
+            echo "overall: success"
+            exit 0
+          else
+            echo "overall: failure"
+            exit 1
+          fi
