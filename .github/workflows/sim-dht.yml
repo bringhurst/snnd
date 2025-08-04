@@ -1,4 +1,4 @@
-name: DHT Simulation Test
+name: dht_simulation
 
 on:
   push:
@@ -28,7 +28,7 @@ jobs:
     - name: test
       run: zig build test
       
-    - name: gen params
+    - name: gen_params
       id: p
       run: |
         S=$((GITHUB_RUN_NUMBER + ${{ matrix.run }} + $(date +%s)))
