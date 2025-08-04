@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1754288527693,
+  "lastUpdate": 1754288543778,
   "repoUrl": "https://github.com/bringhurst/snnd",
   "entries": {
     "Benchmark": [
@@ -443,6 +443,80 @@ window.BENCHMARK_DATA = {
           {
             "name": "simulation-throughput-neurons-small",
             "value": 0.726849,
+            "unit": "neurons/ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jon@bringhurst.org",
+            "name": "Jon Bringhurst",
+            "username": "bringhurst"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b76973284728d2cc86dc46dc735706de52c056f5",
+          "message": "Merge pull request #8 from bringhurst/jbringhu/remove_ghp_action\n\nRemove GHP action",
+          "timestamp": "2025-08-03T23:21:12-07:00",
+          "tree_id": "70b4fa2af73941b2ce7747110d61942ab8b0ac05",
+          "url": "https://github.com/bringhurst/snnd/commit/b76973284728d2cc86dc46dc735706de52c056f5"
+        },
+        "date": 1754288542899,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "total-simulation-time-medium",
+            "value": 14295.838027,
+            "unit": "ms"
+          },
+          {
+            "name": "initialization-time-medium",
+            "value": 981.272929,
+            "unit": "ms"
+          },
+          {
+            "name": "simulation-time-medium",
+            "value": 13314.565098,
+            "unit": "ms"
+          },
+          {
+            "name": "mean-firing-rate-medium",
+            "value": 54.355751,
+            "unit": "Hz"
+          },
+          {
+            "name": "active-neuron-ratio-medium",
+            "value": 1,
+            "unit": "ratio"
+          },
+          {
+            "name": "total-spikes-medium",
+            "value": 217423,
+            "unit": "count"
+          },
+          {
+            "name": "active-neurons-medium",
+            "value": 2000,
+            "unit": "count"
+          },
+          {
+            "name": "total-synapses-medium",
+            "value": 479805,
+            "unit": "count"
+          },
+          {
+            "name": "simulation-throughput-spikes-medium",
+            "value": 16.329711,
+            "unit": "spikes/ms"
+          },
+          {
+            "name": "simulation-throughput-neurons-medium",
+            "value": 0.150211,
             "unit": "neurons/ms"
           }
         ]
