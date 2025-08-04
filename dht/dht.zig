@@ -22,10 +22,20 @@ pub const Value = []const u8;
 /// Basic config for a DHT node.
 /// Fill this out, then call Dht.init().
 pub const Config = struct {
-    k: usize = 20,                 // How many peers per bucket.
-    id: NodeId,                    // Who we are.
-    addr: std.net.Address,         // Where we listen.
-    allocator: *std.mem.Allocator, // Who pays for memory.
+    // How many peers per bucket.
+    k: usize = 20,
+
+    // Who we are.
+    id: NodeId,
+
+    // Where we listen.
+    addr: std.net.Address,
+
+    // Who pays for memory
+    allocator: std.mem.Allocator,
+
+    // Peers saved from the last session.
+    peers_path: []const u8 = ".dht_peers",
 };
 
 /// The main handle for the DHT.
@@ -38,7 +48,7 @@ pub const Dht = struct {
     /// Set up your node.
     /// Call once. Check for errors.
     pub fn init(cfg: Config) !*Dht {
-        var dht_ptr = try cfg.allocator.create(Dht);
+        const dht_ptr = try cfg.allocator.create(Dht);
         dht_ptr.config = cfg;
         dht_ptr.table = try Table.init(cfg);
         dht_ptr.node = try Node.init(cfg, dht_ptr.table);
@@ -73,7 +83,7 @@ pub const Dht = struct {
 
     /// List some peers you know.
     /// Pass a buffer, it gets filled up with peers. Returns count.
-    pub fn peers(self: *Dht, out: []Peer) !usize {
+    pub fn peers(self: *Dht, out: []Peer) usize {
         return self.table.peers(out);
     }
 };
