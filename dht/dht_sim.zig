@@ -74,16 +74,43 @@ pub const SimConfig = struct {
     num_peers: usize = 10,
     message_rate: u64 = 100,
     seed: u64 = 12345,
+    benchmark_mode: bool = false, // NEW: benchmark output flag
 };
 
-pub fn runSimulation(allocator: std.mem.Allocator, config: SimConfig) !void {
-    const stdout = std.io.getStdOut().writer();
+pub const BenchmarkResult = struct {
+    name: []const u8,
+    unit: []const u8,
+    value: f64,
+};
 
-    try stdout.print("Starting DHT simulation:\n", .{});
-    try stdout.print("  Duration: {}s\n", .{config.duration_seconds});
-    try stdout.print("  Peers: {}\n", .{config.num_peers});
-    try stdout.print("  Message rate: {}/s\n", .{config.message_rate});
-    try stdout.print("  Seed: {}\n", .{config.seed});
+pub const SimStats = struct {
+    messages_sent: u64,
+    messages_processed: u64,
+    peer_connections: u64,
+    simulation_time_ms: f64,
+    setup_time_ms: f64,
+    total_time_ms: f64,
+
+    pub fn getMessageThroughput(self: SimStats) f64 {
+        return @as(f64, @floatFromInt(self.messages_sent)) / (self.simulation_time_ms / 1000.0);
+    }
+
+    pub fn getProcessingThroughput(self: SimStats) f64 {
+        return @as(f64, @floatFromInt(self.messages_processed)) / (self.simulation_time_ms / 1000.0);
+    }
+};
+
+pub fn runSimulation(allocator: std.mem.Allocator, config: SimConfig) !SimStats {
+    const total_start = std.time.nanoTimestamp();
+
+    if (!config.benchmark_mode) {
+        const stdout = std.io.getStdOut().writer();
+        try stdout.print("Starting DHT simulation:\n", .{});
+        try stdout.print("  Duration: {}s\n", .{config.duration_seconds});
+        try stdout.print("  Peers: {}\n", .{config.num_peers});
+        try stdout.print("  Message rate: {}/s\n", .{config.message_rate});
+        try stdout.print("  Seed: {}\n", .{config.seed});
+    }
 
     var prng = std.Random.DefaultPrng.init(config.seed);
     const random = prng.random();
@@ -93,6 +120,8 @@ pub fn runSimulation(allocator: std.mem.Allocator, config: SimConfig) !void {
 
     var peers = std.ArrayList(*SimPeer).init(allocator);
     defer peers.deinit();
+
+    const setup_start = std.time.nanoTimestamp();
 
     for (0..config.num_peers) |i| {
         var id: dht.NodeId = undefined;
@@ -115,22 +144,32 @@ pub fn runSimulation(allocator: std.mem.Allocator, config: SimConfig) !void {
         allocator.free(peers_path);
     }
 
+    var peer_connections: u64 = 0;
     for (peers.items, 0..) |peer, i| {
         for (0..3) |_| {
             const other_idx = random.intRangeLessThan(usize, 0, peers.items.len);
             if (other_idx != i) {
                 const other_peer = peers.items[other_idx];
                 try peer.dht.add_peer(.{ .id = other_peer.dht.config.id, .addr = other_peer.dht.config.addr });
+                peer_connections += 1;
             }
         }
     }
 
-    try stdout.print("Simulation running...\n", .{});
+    const setup_end = std.time.nanoTimestamp();
+    const setup_time_ms = @as(f64, @floatFromInt(setup_end - setup_start)) / 1_000_000.0;
 
+    if (!config.benchmark_mode) {
+        const stdout = std.io.getStdOut().writer();
+        try stdout.print("Simulation running...\n", .{});
+    }
+
+    const sim_start = std.time.nanoTimestamp();
     const start_time = std.time.milliTimestamp();
     const end_time = start_time + @as(i64, @intCast(config.duration_seconds * 1000));
 
     var messages_sent: u64 = 0;
+    var messages_processed: u64 = 0;
     var last_report = start_time;
 
     while (std.time.milliTimestamp() < end_time) {
@@ -154,22 +193,80 @@ pub fn runSimulation(allocator: std.mem.Allocator, config: SimConfig) !void {
             }
         }
 
+        const initial_pending = countPendingMessages(&net);
         try net.step_all();
+        const final_pending = countPendingMessages(&net);
+        messages_processed += initial_pending - final_pending;
 
-        const now = std.time.milliTimestamp();
-        if (now - last_report >= 5000) {
-            const elapsed = @as(f64, @floatFromInt(now - start_time)) / 1000.0;
-            const remaining = @as(f64, @floatFromInt(end_time - now)) / 1000.0;
-            try stdout.print("Progress: {d:.1}s elapsed, {d:.1}s remaining, {} messages sent\n", .{ elapsed, remaining, messages_sent });
-            last_report = now;
+        if (!config.benchmark_mode) {
+            const now = std.time.milliTimestamp();
+            if (now - last_report >= 5000) {
+                const elapsed = @as(f64, @floatFromInt(now - start_time)) / 1000.0;
+                const remaining = @as(f64, @floatFromInt(end_time - now)) / 1000.0;
+                const stdout = std.io.getStdOut().writer();
+                try stdout.print("Progress: {d:.1}s elapsed, {d:.1}s remaining, {} messages sent\n", .{ elapsed, remaining, messages_sent });
+                last_report = now;
+            }
         }
 
         std.time.sleep(100 * std.time.ns_per_ms);
     }
 
-    try stdout.print("Simulation completed!\n", .{});
-    try stdout.print("Total messages sent: {}\n", .{messages_sent});
-    try stdout.print("Average rate: {d:.1} msg/s\n", .{@as(f64, @floatFromInt(messages_sent)) / @as(f64, @floatFromInt(config.duration_seconds))});
+    const sim_end = std.time.nanoTimestamp();
+    const simulation_time_ms = @as(f64, @floatFromInt(sim_end - sim_start)) / 1_000_000.0;
+    const total_time_ms = @as(f64, @floatFromInt(sim_end - total_start)) / 1_000_000.0;
+
+    const stats = SimStats{
+        .messages_sent = messages_sent,
+        .messages_processed = messages_processed,
+        .peer_connections = peer_connections,
+        .simulation_time_ms = simulation_time_ms,
+        .setup_time_ms = setup_time_ms,
+        .total_time_ms = total_time_ms,
+    };
+
+    if (!config.benchmark_mode) {
+        const stdout = std.io.getStdOut().writer();
+        try stdout.print("Simulation completed!\n", .{});
+        try stdout.print("Total messages sent: {}\n", .{messages_sent});
+        try stdout.print("Total messages processed: {}\n", .{messages_processed});
+        try stdout.print("Average send rate: {d:.1} msg/s\n", .{stats.getMessageThroughput()});
+        try stdout.print("Average processing rate: {d:.1} msg/s\n", .{stats.getProcessingThroughput()});
+        try stdout.print("Setup time: {d:.2}ms\n", .{setup_time_ms});
+        try stdout.print("Simulation time: {d:.2}ms\n", .{simulation_time_ms});
+    }
+
+    return stats;
+}
+
+fn countPendingMessages(net: *SimNet) u64 {
+    var count: u64 = 0;
+    for (net.peers.items) |peer| {
+        count += @intCast(peer.inbox.items.len);
+    }
+    return count;
+}
+
+pub fn printBenchmarkResults(stats: SimStats) !void {
+    const benchmark_results = [_]BenchmarkResult{
+        .{ .name = "total-simulation-time", .unit = "ms", .value = stats.total_time_ms },
+        .{ .name = "setup-time", .unit = "ms", .value = stats.setup_time_ms },
+        .{ .name = "simulation-time", .unit = "ms", .value = stats.simulation_time_ms },
+        .{ .name = "messages-sent", .unit = "count", .value = @floatFromInt(stats.messages_sent) },
+        .{ .name = "messages-processed", .unit = "count", .value = @floatFromInt(stats.messages_processed) },
+        .{ .name = "peer-connections", .unit = "count", .value = @floatFromInt(stats.peer_connections) },
+        .{ .name = "message-throughput", .unit = "msg/s", .value = stats.getMessageThroughput() },
+        .{ .name = "processing-throughput", .unit = "msg/s", .value = stats.getProcessingThroughput() },
+        .{ .name = "message-efficiency", .unit = "ratio", .value = @as(f64, @floatFromInt(stats.messages_processed)) / @as(f64, @floatFromInt(stats.messages_sent)) },
+    };
+
+    const stdout = std.io.getStdOut().writer();
+    try stdout.print("[", .{});
+    for (benchmark_results, 0..) |result, i| {
+        if (i > 0) try stdout.print(",", .{});
+        try stdout.print("{{\"name\":\"{s}\",\"unit\":\"{s}\",\"value\":{d:.6}}}", .{ result.name, result.unit, result.value });
+    }
+    try stdout.print("]\n", .{});
 }
 
 fn printUsage() !void {
@@ -183,11 +280,13 @@ fn printUsage() !void {
     try stdout.print("  --peers COUNT       Number of DHT peers to simulate (default: 10)\n", .{});
     try stdout.print("  --rate MSGS/SEC     Message rate per second (default: 100)\n", .{});
     try stdout.print("  --seed NUMBER       Random seed for deterministic runs (default: 12345)\n", .{});
+    try stdout.print("  --benchmark         Output benchmark results in JSON format\n", .{});
     try stdout.print("  --help              Show this help\n", .{});
     try stdout.print("\n", .{});
     try stdout.print("Examples:\n", .{});
     try stdout.print("  zig run sim.zig -- --duration 60 --peers 20\n", .{});
     try stdout.print("  zig run sim.zig -- --duration 300 --rate 50 --seed 42\n", .{});
+    try stdout.print("  zig run sim.zig -- --duration 120 --peers 50 --benchmark\n", .{});
     try stdout.print("\n", .{});
 }
 
@@ -214,11 +313,17 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, args[i], "--seed") and i + 1 < args.len) {
             config.seed = try std.fmt.parseInt(u64, args[i + 1], 10);
             i += 1;
+        } else if (std.mem.eql(u8, args[i], "--benchmark")) {
+            config.benchmark_mode = true;
         } else if (std.mem.eql(u8, args[i], "--help")) {
             try printUsage();
-            return;
+            std.process.exit(0);
         }
     }
 
-    try runSimulation(allocator, config);
+    const stats = try runSimulation(allocator, config);
+
+    if (config.benchmark_mode) {
+        try printBenchmarkResults(stats);
+    }
 }

@@ -1,5 +1,5 @@
 const std = @import("std");
-const lif = @import("lif.zig");
+const lif = @import("lif");
 
 test "LIF basic functionality" {
     var neuron = lif.LIF.init(lif.Params{});
@@ -35,7 +35,6 @@ test "LIF spike generation" {
 
 test "LIF refractory period" {
     var neuron = lif.LIF.init(lif.Params{ .t_refrac = 5.0 });
-
     // Force a spike by stepping with large input
     var spiked = false;
     var steps: u32 = 0;
