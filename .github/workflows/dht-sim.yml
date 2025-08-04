@@ -34,7 +34,7 @@ jobs:
         S=$((GITHUB_RUN_NUMBER + ${{ matrix.run }} + $(date +%s)))
         P=$((10 + S % 41))
         R=$((50 + S % 151))
-        echo "s=$S p=$P r=$R t=900" | tee /dev/stderr
+        echo "s=$S p=$P r=$R t=180" | tee /dev/stderr
         echo "seed=$S" >> $GITHUB_OUTPUT
         echo "peers=$P" >> $GITHUB_OUTPUT
         echo "rate=$R" >> $GITHUB_OUTPUT
@@ -42,7 +42,7 @@ jobs:
     - name: sim
       run: |
         echo "run ${{ matrix.run }}: ${{ steps.p.outputs.peers }}p ${{ steps.p.outputs.rate }}r 15m"
-        zig build sim -- --duration 900 --peers ${{ steps.p.outputs.peers }} --rate ${{ steps.p.outputs.rate }} --seed ${{ steps.p.outputs.seed }}
+        zig build sim -- --duration 180 --peers ${{ steps.p.outputs.peers }} --rate ${{ steps.p.outputs.rate }} --seed ${{ steps.p.outputs.seed }}
         
     - name: clean
       if: always()

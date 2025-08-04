@@ -5,12 +5,19 @@ const msg = @import("msg.zig");
 pub const SimPeer = struct {
     dht: *dht.Dht,
     inbox: std.ArrayList(msg.Msg),
+    peers_path: []u8,
 
     pub fn init(allocator: std.mem.Allocator, cfg: dht.Config) !*SimPeer {
         const self = try allocator.create(SimPeer);
+        const owned_path = try allocator.dupe(u8, cfg.peers_path);
+
+        var owned_cfg = cfg;
+        owned_cfg.peers_path = owned_path;
+
         self.* = SimPeer{
-            .dht = try dht.Dht.init(cfg),
+            .dht = try dht.Dht.init(owned_cfg),
             .inbox = std.ArrayList(msg.Msg).init(allocator),
+            .peers_path = owned_path,
         };
         return self;
     }
@@ -18,6 +25,7 @@ pub const SimPeer = struct {
     pub fn deinit(self: *SimPeer, allocator: std.mem.Allocator) void {
         self.dht.deinit();
         self.inbox.deinit();
+        allocator.free(self.peers_path);
         allocator.destroy(self);
     }
 
@@ -91,7 +99,6 @@ pub fn runSimulation(allocator: std.mem.Allocator, config: SimConfig) !void {
         random.bytes(&id);
 
         const peers_path = try std.fmt.allocPrint(allocator, ".dht_peers_{}", .{i});
-        defer allocator.free(peers_path);
 
         const cfg = dht.Config{
             .k = 8,
@@ -104,6 +111,8 @@ pub fn runSimulation(allocator: std.mem.Allocator, config: SimConfig) !void {
         const peer = try SimPeer.init(allocator, cfg);
         try peers.append(peer);
         try net.add_peer(peer);
+
+        allocator.free(peers_path);
     }
 
     for (peers.items, 0..) |peer, i| {
@@ -125,7 +134,7 @@ pub fn runSimulation(allocator: std.mem.Allocator, config: SimConfig) !void {
     var last_report = start_time;
 
     while (std.time.milliTimestamp() < end_time) {
-        const messages_this_tick = config.message_rate / 10;
+        const messages_this_tick = config.message_rate / 10; // 10 ticks per second
         for (0..messages_this_tick) |_| {
             const from_idx = random.intRangeLessThan(usize, 0, peers.items.len);
             const to_idx = random.intRangeLessThan(usize, 0, peers.items.len);
@@ -151,7 +160,7 @@ pub fn runSimulation(allocator: std.mem.Allocator, config: SimConfig) !void {
         if (now - last_report >= 5000) {
             const elapsed = @as(f64, @floatFromInt(now - start_time)) / 1000.0;
             const remaining = @as(f64, @floatFromInt(end_time - now)) / 1000.0;
-            try stdout.print("Progress: {:.1} elapsed, {:.1}s remaining, {} messages sent\n", .{ elapsed, remaining, messages_sent });
+            try stdout.print("Progress: {d:.1}s elapsed, {d:.1}s remaining, {} messages sent\n", .{ elapsed, remaining, messages_sent });
             last_report = now;
         }
 
@@ -160,13 +169,7 @@ pub fn runSimulation(allocator: std.mem.Allocator, config: SimConfig) !void {
 
     try stdout.print("Simulation completed!\n", .{});
     try stdout.print("Total messages sent: {}\n", .{messages_sent});
-    try stdout.print("Average rate: {:.1} msg/s\n", .{@as(f64, @floatFromInt(messages_sent)) / @as(f64, @floatFromInt(config.duration_seconds))});
-
-    for (0..config.num_peers) |i| {
-        const path = try std.fmt.allocPrint(allocator, ".dht_peers_{}", .{i});
-        defer allocator.free(path);
-        std.fs.cwd().deleteFile(path) catch {};
-    }
+    try stdout.print("Average rate: {d:.1} msg/s\n", .{@as(f64, @floatFromInt(messages_sent)) / @as(f64, @floatFromInt(config.duration_seconds))});
 }
 
 fn printUsage() !void {
