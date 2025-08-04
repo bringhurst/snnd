@@ -151,7 +151,7 @@ pub fn runSimulation(allocator: std.mem.Allocator, config: SimConfig) !void {
         if (now - last_report >= 5000) {
             const elapsed = @as(f64, @floatFromInt(now - start_time)) / 1000.0;
             const remaining = @as(f64, @floatFromInt(end_time - now)) / 1000.0;
-            try stdout.print("Progress: {:.1} elapsed, {:.1}s remaining, {} messages sent\n", .{ elapsed, remaining, messages_sent });
+            try stdout.print("Progress: {d:.1}s elapsed, {d:.1}s remaining, {} messages sent\n", .{ elapsed, remaining, messages_sent });
             last_report = now;
         }
 
@@ -160,7 +160,7 @@ pub fn runSimulation(allocator: std.mem.Allocator, config: SimConfig) !void {
 
     try stdout.print("Simulation completed!\n", .{});
     try stdout.print("Total messages sent: {}\n", .{messages_sent});
-    try stdout.print("Average rate: {:.1} msg/s\n", .{@as(f64, @floatFromInt(messages_sent)) / @as(f64, @floatFromInt(config.duration_seconds))});
+    try stdout.print("Average rate: {d:.1} msg/s\n", .{@as(f64, @floatFromInt(messages_sent)) / @as(f64, @floatFromInt(config.duration_seconds))});
 
     for (0..config.num_peers) |i| {
         const path = try std.fmt.allocPrint(allocator, ".dht_peers_{}", .{i});
