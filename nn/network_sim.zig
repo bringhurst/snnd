@@ -133,7 +133,7 @@ fn parseCommandLine(allocator: std.mem.Allocator) !NetworkConfig {
             print("  --seed s          random seed (default: 42)\n", .{});
             print("  --benchmark       output benchmark results in JSON format\n", .{});
             print("  --help           show this help\n", .{});
-            std.process.exit(0); // FIXED: Exit instead of return
+            std.process.exit(0);
         }
     }
 

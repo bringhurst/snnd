@@ -17,7 +17,6 @@ const Modules = struct {
     table: *std.Build.Module,
     node: *std.Build.Module,
     msg: *std.Build.Module,
-    sim: *std.Build.Module,
 
     // nn
     lif: *std.Build.Module,
@@ -61,9 +60,6 @@ fn createModules(b: *std.Build) Modules {
         .msg = b.addModule("msg", .{
             .root_source_file = b.path("dht/msg.zig"),
         }),
-        .sim = b.addModule("sim", .{
-            .root_source_file = b.path("dht/dht_sim.zig"),
-        }),
 
         .lif = lif,
         .neuron = neuron,
@@ -83,7 +79,6 @@ fn createExecutables(b: *std.Build, target: std.Build.ResolvedTarget, optimize: 
     dht_sim_exe.root_module.addImport("table", modules.table);
     dht_sim_exe.root_module.addImport("node", modules.node);
     dht_sim_exe.root_module.addImport("msg", modules.msg);
-    dht_sim_exe.root_module.addImport("sim", modules.sim);
     b.installArtifact(dht_sim_exe);
 
     // network simulator
@@ -135,7 +130,6 @@ fn createTestSteps(b: *std.Build, target: std.Build.ResolvedTarget, optimize: st
     dht_tests.root_module.addImport("table", modules.table);
     dht_tests.root_module.addImport("node", modules.node);
     dht_tests.root_module.addImport("msg", modules.msg);
-    dht_tests.root_module.addImport("sim", modules.sim);
 
     // neuron tests
     const lif_tests = b.addTest(.{
