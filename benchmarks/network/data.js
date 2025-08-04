@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1754288353303,
+  "lastUpdate": 1754288488830,
   "repoUrl": "https://github.com/bringhurst/snnd",
   "entries": {
     "Benchmark": [
@@ -295,6 +295,80 @@ window.BENCHMARK_DATA = {
           {
             "name": "simulation-throughput-neurons-medium",
             "value": 0.154184,
+            "unit": "neurons/ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jon@bringhurst.org",
+            "name": "Jon Bringhurst",
+            "username": "bringhurst"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e0ccc5e6972a55ae586d3bbd9adbbd73de47d943",
+          "message": "Merge pull request #6 from bringhurst/redundant_benchmarks\n\nRemove redundant benchmarks",
+          "timestamp": "2025-08-03T23:15:36-07:00",
+          "tree_id": "0f83953b3c890045c5fd94aa19510b4e53669ca2",
+          "url": "https://github.com/bringhurst/snnd/commit/e0ccc5e6972a55ae586d3bbd9adbbd73de47d943"
+        },
+        "date": 1754288487862,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "total-simulation-time-large",
+            "value": 313287.031814,
+            "unit": "ms"
+          },
+          {
+            "name": "initialization-time-large",
+            "value": 4723.983803,
+            "unit": "ms"
+          },
+          {
+            "name": "simulation-time-large",
+            "value": 308563.048011,
+            "unit": "ms"
+          },
+          {
+            "name": "mean-firing-rate-large",
+            "value": 201.659866,
+            "unit": "Hz"
+          },
+          {
+            "name": "active-neuron-ratio-large",
+            "value": 1,
+            "unit": "ratio"
+          },
+          {
+            "name": "total-spikes-large",
+            "value": 3024898,
+            "unit": "count"
+          },
+          {
+            "name": "active-neurons-large",
+            "value": 5000,
+            "unit": "count"
+          },
+          {
+            "name": "total-synapses-large",
+            "value": 2999129,
+            "unit": "count"
+          },
+          {
+            "name": "simulation-throughput-spikes-large",
+            "value": 9.803176,
+            "unit": "spikes/ms"
+          },
+          {
+            "name": "simulation-throughput-neurons-large",
+            "value": 0.016204,
             "unit": "neurons/ms"
           }
         ]
