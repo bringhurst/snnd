@@ -1,9 +1,9 @@
 const std = @import("std");
 
 pub const Neuron = union(enum) {
-    lif: @import("lif/lif.zig").LIF,
-    // izhikevich: @import("izhikevich/izhikevich.zig").Izhikevich,
-    // hodgkin_huxley: @import("hh/hh.zig").HodgkinHuxley,
+    lif: @import("lif").LIF,
+    // izhikevich: @import("izhikevich").Izhikevich,
+    // hodgkin_huxley: @import("hh").HodgkinHuxley,
 
     pub fn step(self: *Neuron, input_current: f64, dt: f64) bool {
         return switch (self.*) {
@@ -30,6 +30,6 @@ pub const Neuron = union(enum) {
     }
 };
 
-pub fn createLIF(params: @import("lif/lif.zig").Params) Neuron {
-    return Neuron{ .lif = @import("lif/lif.zig").LIF.init(params) };
+pub fn createLIF(params: @import("lif").Params) Neuron {
+    return Neuron{ .lif = @import("lif").LIF.init(params) };
 }

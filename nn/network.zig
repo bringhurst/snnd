@@ -1,5 +1,6 @@
 const std = @import("std");
 const lif = @import("lif");
+const neuron = @import("neuron.zig");
 const print = std.debug.print;
 
 const NetworkConfig = struct {
@@ -19,7 +20,7 @@ const Synapse = struct {
 };
 
 const NetworkSim = struct {
-    neurons: []lif.LIF,
+    neurons: []neuron.Neuron,
     synapses: [][]Synapse,
     spike_times: std.ArrayList(std.ArrayList(f32)),
     input_currents: []f32, // current input for each neuron this timestep
@@ -29,7 +30,7 @@ const NetworkSim = struct {
 
     pub fn init(allocator: std.mem.Allocator, config: NetworkConfig) !NetworkSim {
         var sim = NetworkSim{
-            .neurons = try allocator.alloc(lif.LIF, config.neurons),
+            .neurons = try allocator.alloc(neuron.Neuron, config.neurons),
             .synapses = try allocator.alloc([]Synapse, config.neurons),
             .spike_times = std.ArrayList(std.ArrayList(f32)).init(allocator),
             .input_currents = try allocator.alloc(f32, config.neurons),
@@ -39,8 +40,8 @@ const NetworkSim = struct {
         };
 
         const params = lif.Params{};
-        for (sim.neurons) |*neuron| {
-            neuron.* = lif.LIF.init(params);
+        for (sim.neurons) |*n| {
+            n.* = neuron.createLIF(params);
         }
 
         for (0..config.neurons) |_| {
@@ -91,7 +92,6 @@ const NetworkSim = struct {
         for (0..steps) |step| {
             const t = @as(f32, @floatFromInt(step)) * self.config.dt;
 
-            // reset input currents to background level
             @memset(self.input_currents, self.config.background_current);
 
             // process delayed spikes
@@ -134,6 +134,86 @@ const NetworkSim = struct {
         print("  progress: 100%\n", .{});
     }
 
+    pub fn checkHealth(self: *NetworkSim) !void {
+        var total_spikes: u32 = 0;
+        var active_neurons: u32 = 0;
+        var peak_rate: f32 = 0.0;
+        var peak_neuron: usize = 0;
+        var min_rate: f32 = std.math.floatMax(f32);
+
+        for (0..self.config.neurons) |i| {
+            const spike_count = self.spike_times.items[i].items.len;
+            total_spikes += @intCast(spike_count);
+            if (spike_count > 0) {
+                active_neurons += 1;
+                const rate = @as(f32, @floatFromInt(spike_count)) / (self.config.duration / 1000.0);
+                if (rate > peak_rate) {
+                    peak_rate = rate;
+                    peak_neuron = i;
+                }
+                if (rate < min_rate) {
+                    min_rate = rate;
+                }
+            }
+        }
+
+        // if no spikes at all, fail.
+        if (total_spikes == 0 or active_neurons == 0) {
+            print("\n[FAIL] No neurons spiked. Try increasing background current or reducing threshold.\n", .{});
+            std.process.exit(1);
+        }
+
+        // if <2% of neurons are active, warn/fail.
+        const activity = @as(f32, @floatFromInt(active_neurons)) / @as(f32, @floatFromInt(self.config.neurons));
+        if (activity < 0.02) {
+            print("\n[FAIL] Less than 2% of neurons are active ({}/{}). Network too silent.\n", .{ active_neurons, self.config.neurons });
+            std.process.exit(2);
+        }
+
+        // if >95% of neurons are silent, warn.
+        if (activity < 0.05) {
+            print("\n[WARN] Less than 5% of neurons spiked. Network sparsely active.\n", .{});
+        }
+
+        // if >10% of neurons spike at >100Hz, warn about overactivity.
+        var overactive: u32 = 0;
+        for (0..self.config.neurons) |i| {
+            const spike_count = self.spike_times.items[i].items.len;
+            const rate = @as(f32, @floatFromInt(spike_count)) / (self.config.duration / 1000.0);
+            if (rate > 100.0) overactive += 1;
+        }
+        if (@as(f32, @floatFromInt(overactive)) / @as(f32, @floatFromInt(self.config.neurons)) > 0.1) {
+            print("\n[WARN] More than 10% of neurons are firing >100Hz. Network may be unstable.\n", .{});
+        }
+
+        // if all neurons spike at the same instant (within 1 dt), warn about synchrony.
+        var synchrony: bool = false;
+        if (active_neurons > 1) {
+            var first_spike_time: ?f32 = null;
+            var all_same = true;
+            for (0..self.config.neurons) |i| {
+                const spikes = self.spike_times.items[i];
+                if (spikes.items.len > 0) {
+                    if (first_spike_time == null) {
+                        first_spike_time = spikes.items[0];
+                    } else if (@abs(spikes.items[0] - first_spike_time.?) > self.config.dt + 1e-6) {
+                        all_same = false;
+                        break;
+                    }
+                }
+            }
+            if (all_same and first_spike_time != null) {
+                synchrony = true;
+                print("\n[WARN] All active neurons spiked at same time ({d:.3} ms). Possible synchrony artifact.\n", .{first_spike_time.?});
+            }
+        }
+
+        // if all neurons spike at rates within 1Hz of each other, warn about lack of diversity.
+        if (peak_rate - min_rate < 1.0 and active_neurons > 1) {
+            print("\n[WARN] All spiking neurons have nearly identical rates ({d:.1}Hz). Lacking rate diversity.\n", .{peak_rate});
+        }
+    }
+
     pub fn printResults(self: *NetworkSim) void {
         var total_spikes: u32 = 0;
         var active_neurons: u32 = 0;
@@ -172,8 +252,8 @@ const NetworkSim = struct {
                 }
             }.lessThan);
 
-            for (neuron_rates.items[0..@min(5, neuron_rates.items.len)]) |neuron| {
-                print("  neuron {}: {d:.1}hz\n", .{ neuron.id, neuron.rate });
+            for (neuron_rates.items[0..@min(5, neuron_rates.items.len)]) |nr| {
+                print("  neuron {}: {d:.1}hz\n", .{ nr.id, nr.rate });
             }
         } else {
             print("\nno neurons spiked - try increasing background current or reducing threshold\n", .{});
@@ -240,4 +320,5 @@ pub fn main() !void {
     defer sim.deinit();
     try sim.run();
     sim.printResults();
+    try sim.checkHealth();
 }

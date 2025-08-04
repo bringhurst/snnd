@@ -98,7 +98,7 @@ jobs:
           echo "test: ${{ needs.test.result }}"
           echo "dht-sim: ${{ needs.dht-sim.result }}"
           echo "network-sim: ${{ needs.network-sim.result }}"
-          
+
           # check overall success
           if [ "${{ needs.test.result }}" = "success" ] && \
              [ "${{ needs.dht-sim.result }}" = "success" ] && \

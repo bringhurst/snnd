@@ -21,6 +21,7 @@ const Modules = struct {
 
     // nn
     lif: *std.Build.Module,
+    neuron: *std.Build.Module,
 };
 
 const Executables = struct {
@@ -51,6 +52,9 @@ fn createModules(b: *std.Build) Modules {
         .lif = b.addModule("lif", .{
             .root_source_file = b.path("nn/lif/lif.zig"),
         }),
+        .neuron = b.addModule("neuron", .{
+            .root_source_file = b.path("nn/neuron.zig"),
+        }),
     };
 }
 
@@ -77,6 +81,7 @@ fn createExecutables(b: *std.Build, target: std.Build.ResolvedTarget, optimize: 
         .optimize = optimize,
     });
     network_sim_exe.root_module.addImport("lif", modules.lif);
+    network_sim_exe.root_module.addImport("neuron", modules.neuron);
     b.installArtifact(network_sim_exe);
 
     return Executables{
@@ -126,8 +131,16 @@ fn createTestSteps(b: *std.Build, target: std.Build.ResolvedTarget, optimize: st
     });
     lif_tests.root_module.addImport("lif", modules.lif);
 
+    const neuron_tests = b.addTest(.{
+        .root_source_file = b.path("nn/neuron.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    neuron_tests.root_module.addImport("lif", modules.lif);
+
     // test step
     const test_step = b.step("test", "Run all tests");
     test_step.dependOn(&dht_tests.step);
     test_step.dependOn(&lif_tests.step);
+    test_step.dependOn(&neuron_tests.step);
 }
