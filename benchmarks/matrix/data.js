@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1754287539998,
+  "lastUpdate": 1754287629307,
   "repoUrl": "https://github.com/bringhurst/snnd",
   "entries": {
     "Benchmark": [
@@ -221,6 +221,80 @@ window.BENCHMARK_DATA = {
           {
             "name": "simulation-throughput-neurons-large",
             "value": 0.016149,
+            "unit": "neurons/ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "jon@bringhurst.org",
+            "name": "Jon Bringhurst",
+            "username": "bringhurst"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7a4ad03031a0193b5903d4b006810fd9a9431f78",
+          "message": "Merge pull request #5 from bringhurst/jbringhu/pages_branch\n\nMove GHP to a branch",
+          "timestamp": "2025-08-03T23:06:22-07:00",
+          "tree_id": "745ee19bf26b082a3f4c0c1801a3861b0481bd40",
+          "url": "https://github.com/bringhurst/snnd/commit/7a4ad03031a0193b5903d4b006810fd9a9431f78"
+        },
+        "date": 1754287628951,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "total-simulation-time-small",
+            "value": 778.044805,
+            "unit": "ms"
+          },
+          {
+            "name": "initialization-time-small",
+            "value": 104.707765,
+            "unit": "ms"
+          },
+          {
+            "name": "simulation-time-small",
+            "value": 673.33704,
+            "unit": "ms"
+          },
+          {
+            "name": "mean-firing-rate-small",
+            "value": 26.114,
+            "unit": "Hz"
+          },
+          {
+            "name": "active-neuron-ratio-small",
+            "value": 1,
+            "unit": "ratio"
+          },
+          {
+            "name": "total-spikes-small",
+            "value": 13057,
+            "unit": "count"
+          },
+          {
+            "name": "active-neurons-small",
+            "value": 500,
+            "unit": "count"
+          },
+          {
+            "name": "total-synapses-small",
+            "value": 29959,
+            "unit": "count"
+          },
+          {
+            "name": "simulation-throughput-spikes-small",
+            "value": 19.391477,
+            "unit": "spikes/ms"
+          },
+          {
+            "name": "simulation-throughput-neurons-small",
+            "value": 0.74257,
             "unit": "neurons/ms"
           }
         ]
