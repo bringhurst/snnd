@@ -41,7 +41,7 @@ jobs:
         
     - name: sim
       run: |
-        echo "run ${{ matrix.run }}: ${{ steps.p.outputs.peers }}p ${{{ steps.p.outputs.rate }}}r 15m"
+        echo "run ${{ matrix.run }}: ${{ steps.p.outputs.peers }}p ${{ steps.p.outputs.rate }}r 15m"
         zig build sim -- --duration 900 --peers ${{ steps.p.outputs.peers }} --rate ${{ steps.p.outputs.rate }} --seed ${{ steps.p.outputs.seed }}
         
     - name: clean
