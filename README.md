@@ -34,3 +34,8 @@ First, [setup a Zig toolchain](https://ziglang.org), then:
 ```
 zig build test
 ```
+
+### Benchmarks
+
+* [DHT](https://snnp.org/benchmarks/dht/)
+* [Network](https://snnp.org/benchmarks/network/)
