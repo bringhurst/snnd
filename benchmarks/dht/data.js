@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1754708904757,
+  "lastUpdate": 1754795858794,
   "repoUrl": "https://github.com/bringhurst/snnd",
   "entries": {
     "Benchmark": [
@@ -748,6 +748,73 @@ window.BENCHMARK_DATA = {
           {
             "name": "message-efficiency",
             "value": 0.999949,
+            "unit": "ratio"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jon Bringhurst",
+            "username": "bringhurst",
+            "email": "jon@bringhurst.org"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "d5a225f7e2f98974944b2cc7e73625c8ab554f4d",
+          "message": "Merge pull request #9 from bringhurst/gha_name_typo\n\nFix typo in GHA name",
+          "timestamp": "2025-08-04T16:16:27Z",
+          "url": "https://github.com/bringhurst/snnd/commit/d5a225f7e2f98974944b2cc7e73625c8ab554f4d"
+        },
+        "date": 1754795858452,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "total-simulation-time",
+            "value": 240045.798872,
+            "unit": "ms"
+          },
+          {
+            "name": "setup-time",
+            "value": 32.20191,
+            "unit": "ms"
+          },
+          {
+            "name": "simulation-time",
+            "value": 240013.593254,
+            "unit": "ms"
+          },
+          {
+            "name": "messages-sent",
+            "value": 59325,
+            "unit": "count"
+          },
+          {
+            "name": "messages-processed",
+            "value": 59319,
+            "unit": "count"
+          },
+          {
+            "name": "peer-connections",
+            "value": 297,
+            "unit": "count"
+          },
+          {
+            "name": "message-throughput",
+            "value": 247.1735,
+            "unit": "msg/s"
+          },
+          {
+            "name": "processing-throughput",
+            "value": 247.148502,
+            "unit": "msg/s"
+          },
+          {
+            "name": "message-efficiency",
+            "value": 0.999899,
             "unit": "ratio"
           }
         ]
