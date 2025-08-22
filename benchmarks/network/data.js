@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1755831588464,
+  "lastUpdate": 1755831887830,
   "repoUrl": "https://github.com/bringhurst/snnd",
   "entries": {
     "Benchmark": [
@@ -4709,6 +4709,78 @@ window.BENCHMARK_DATA = {
           {
             "name": "simulation-throughput-neurons-medium",
             "value": 0.155703,
+            "unit": "neurons/ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jon Bringhurst",
+            "username": "bringhurst",
+            "email": "jon@bringhurst.org"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "337fca40ae251664fce8a8fb88bb722ad1dbe4e1",
+          "message": "Merge pull request #12 from bringhurst/pin_zig_sim\n\nPin zig to 0.14.1 for simulator runs",
+          "timestamp": "2025-08-21T23:16:12Z",
+          "url": "https://github.com/bringhurst/snnd/commit/337fca40ae251664fce8a8fb88bb722ad1dbe4e1"
+        },
+        "date": 1755831886864,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "total-simulation-time-large",
+            "value": 312852.348484,
+            "unit": "ms"
+          },
+          {
+            "name": "initialization-time-large",
+            "value": 4733.124842,
+            "unit": "ms"
+          },
+          {
+            "name": "simulation-time-large",
+            "value": 308119.223642,
+            "unit": "ms"
+          },
+          {
+            "name": "mean-firing-rate-large",
+            "value": 201.659866,
+            "unit": "Hz"
+          },
+          {
+            "name": "active-neuron-ratio-large",
+            "value": 1,
+            "unit": "ratio"
+          },
+          {
+            "name": "total-spikes-large",
+            "value": 3024898,
+            "unit": "count"
+          },
+          {
+            "name": "active-neurons-large",
+            "value": 5000,
+            "unit": "count"
+          },
+          {
+            "name": "total-synapses-large",
+            "value": 2999129,
+            "unit": "count"
+          },
+          {
+            "name": "simulation-throughput-spikes-large",
+            "value": 9.817297,
+            "unit": "spikes/ms"
+          },
+          {
+            "name": "simulation-throughput-neurons-large",
+            "value": 0.016227,
             "unit": "neurons/ms"
           }
         ]
