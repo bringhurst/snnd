@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776916041612,
+  "lastUpdate": 1777002528183,
   "repoUrl": "https://github.com/bringhurst/snnd",
   "entries": {
     "Benchmark": [
@@ -17964,6 +17964,73 @@ window.BENCHMARK_DATA = {
           {
             "name": "processing-throughput",
             "value": 247.111757,
+            "unit": "msg/s"
+          },
+          {
+            "name": "message-efficiency",
+            "value": 0.999899,
+            "unit": "ratio"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jon Bringhurst",
+            "username": "bringhurst",
+            "email": "jon@bringhurst.org"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "337fca40ae251664fce8a8fb88bb722ad1dbe4e1",
+          "message": "Merge pull request #12 from bringhurst/pin_zig_sim\n\nPin zig to 0.14.1 for simulator runs",
+          "timestamp": "2025-08-21T23:16:12Z",
+          "url": "https://github.com/bringhurst/snnd/commit/337fca40ae251664fce8a8fb88bb722ad1dbe4e1"
+        },
+        "date": 1777002525926,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "total-simulation-time",
+            "value": 240067.362637,
+            "unit": "ms"
+          },
+          {
+            "name": "setup-time",
+            "value": 31.986341,
+            "unit": "ms"
+          },
+          {
+            "name": "simulation-time",
+            "value": 240035.37285,
+            "unit": "ms"
+          },
+          {
+            "name": "messages-sent",
+            "value": 59325,
+            "unit": "count"
+          },
+          {
+            "name": "messages-processed",
+            "value": 59319,
+            "unit": "count"
+          },
+          {
+            "name": "peer-connections",
+            "value": 297,
+            "unit": "count"
+          },
+          {
+            "name": "message-throughput",
+            "value": 247.151073,
+            "unit": "msg/s"
+          },
+          {
+            "name": "processing-throughput",
+            "value": 247.126077,
             "unit": "msg/s"
           },
           {
