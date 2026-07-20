@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784526825821,
+  "lastUpdate": 1784526832280,
   "repoUrl": "https://github.com/bringhurst/snnd",
   "entries": {
     "Benchmark": [
@@ -76349,6 +76349,78 @@ window.BENCHMARK_DATA = {
           {
             "name": "simulation-throughput-neurons-medium",
             "value": 0.198844,
+            "unit": "neurons/ms"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Jon Bringhurst",
+            "username": "bringhurst",
+            "email": "jon@bringhurst.org"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "337fca40ae251664fce8a8fb88bb722ad1dbe4e1",
+          "message": "Merge pull request #12 from bringhurst/pin_zig_sim\n\nPin zig to 0.14.1 for simulator runs",
+          "timestamp": "2025-08-21T23:16:12Z",
+          "url": "https://github.com/bringhurst/snnd/commit/337fca40ae251664fce8a8fb88bb722ad1dbe4e1"
+        },
+        "date": 1784526829332,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "total-simulation-time-small",
+            "value": 508.04267,
+            "unit": "ms"
+          },
+          {
+            "name": "initialization-time-small",
+            "value": 53.351583,
+            "unit": "ms"
+          },
+          {
+            "name": "simulation-time-small",
+            "value": 454.691087,
+            "unit": "ms"
+          },
+          {
+            "name": "mean-firing-rate-small",
+            "value": 26.114,
+            "unit": "Hz"
+          },
+          {
+            "name": "active-neuron-ratio-small",
+            "value": 1,
+            "unit": "ratio"
+          },
+          {
+            "name": "total-spikes-small",
+            "value": 13057,
+            "unit": "count"
+          },
+          {
+            "name": "active-neurons-small",
+            "value": 500,
+            "unit": "count"
+          },
+          {
+            "name": "total-synapses-small",
+            "value": 29959,
+            "unit": "count"
+          },
+          {
+            "name": "simulation-throughput-spikes-small",
+            "value": 28.7162,
+            "unit": "spikes/ms"
+          },
+          {
+            "name": "simulation-throughput-neurons-small",
+            "value": 1.099648,
             "unit": "neurons/ms"
           }
         ]
